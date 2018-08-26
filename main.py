@@ -12,24 +12,31 @@ from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 
 logger = logging.getLogger(__name__)
 
+from api import API
+
 class OpenSubtitlesExtension(Extension):
 
     def __init__(self):
         super(OpenSubtitlesExtension, self).__init__()
 
+        self._api = API()
+
         # Subscribe to events
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(PreferencesEvent, PreferencesEventListener()) # Set preferences to inner members
-        #self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
-        #self.subscribe(ItemEnterEvent, ItemEnterEventListener())
+        self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
+        self.subscribe(ItemEnterEvent, ItemEnterEventListener())
 
     def show_example(self):
+        search_result = self._api.get_episode(4145054, 1, 3)
         items = []
-        items.append(ExtensionResultItem(icon = 'images/tv_show.png',
-                                         name = 'Westworld',
-                                         description = 'An AI theme park',
+
+        for item in search_result[:5]:
+            items.append(ExtensionResultItem(icon = 'images/tv_show.png',
+                                         name = '%s - %s [%s]' % (item.language, item.uploader, item.uploader_badge),
+                                         description = '%s' % item.video_source_name,
                                          highlightable = True,
-                                         on_enter = DoNothingAction()))
+                                         on_enter = ExtensionCustomAction(item.url)))
         return RenderResultListAction(items)
 
 class KeywordQueryEventListener(EventListener):
@@ -64,7 +71,10 @@ class PreferencesUpdateEventListener(EventListener):
 class ItemEnterEventListener(EventListener):
     
     def on_event(self, event, extension):
-        return
+        download_link = event.get_data()
+        
+        import srt
+        srt.download(download_link)
 
 if __name__ == '__main__':
     OpenSubtitlesExtension().run()
