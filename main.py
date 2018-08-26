@@ -19,7 +19,7 @@ class OpenSubtitlesExtension(Extension):
 
         # Subscribe to events
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
-        #self.subscribe(PreferencesEvent, PreferencesEventListener()) # Set preferences to inner members
+        self.subscribe(PreferencesEvent, PreferencesEventListener()) # Set preferences to inner members
         #self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
         #self.subscribe(ItemEnterEvent, ItemEnterEventListener())
 
@@ -42,12 +42,24 @@ class PreferencesEventListener(EventListener):
 
     # Activates when the application first reads the preferences on launch
     def on_event(self, event, extension):
-        return
+        _preferences = event.preferences
+
+        import preferences
+        preferences.PREF_KEYWORD = _preferences['keyword']
+        logger.info("Set 'keyword' preference as: %s" % preferences.PREF_KEYWORD)
 
 class PreferencesUpdateEventListener(EventListener):
     
     def on_event(self, event, extension):
-        return
+        _id = event.id
+        new_value = event.new_value
+        #old_value = event.old_value
+
+        import preferences
+        if _id == 'keyword':
+            preferences.PREF_KEYWORD = new_value
+            logger.info("Update 'keyword' preference to: %s" % preferences.PREF_KEYWORD)
+
 
 class ItemEnterEventListener(EventListener):
     
