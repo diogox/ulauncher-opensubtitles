@@ -36,8 +36,9 @@ class OpenSubtitlesExtension(Extension):
                 'url': item.url,
                 'id': item.download_id
             }
-            items.append(ExtensionResultItem(icon = 'images/tv_show.png',
-                                         name = '%s - %s [%s]' % (item.language, item.uploader, item.uploader_badge),
+            from languages import LANGUAGES
+            items.append(ExtensionResultItem(icon = 'images/languages/%s.svg' % LANGUAGES[item.language],
+                                         name = '%s - %s [%s]' % (item.uploader, item.uploader_badge, item.language),
                                          description = '%s' % item.video_source_name,
                                          highlightable = True,
                                          on_enter = ExtensionCustomAction(download_info)))

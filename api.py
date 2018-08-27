@@ -4,7 +4,9 @@ class API:
     
     def get_episode(self, imdb_id, season_nr, episode_nr, language = 'all'):
         import requests
-        url = BASE_URL + '/en/search/sublanguageid-%s/pimdbid-%s/season-%d/episode-%d' % (language, imdb_id, season_nr, episode_nr) 
+        #TODO: Fix this
+        #url = BASE_URL + '/en/search/sublanguageid-%s/pimdbid-%s/season-%d/episode-%d' % (language, imdb_id, season_nr, episode_nr) 
+        url = 'https://www.opensubtitles.org/en/search/sublanguageid-all/imdbid-4807334'
         response_body = requests.get(url).text
         
         # TODO: Check for season or episode number out of bounds
@@ -29,7 +31,7 @@ class API:
             video_source_name = item.find('br').next_sibling
 
             extra = '/en/search/pimdbid-4145054/season-1/episode-3/sublanguageid-'
-            language = language_column.find('a')['href'].replace(extra, '')
+            language = language_column.find('a')['title']
 
             uploader = uploader_column.text.strip()
             uploader_badge = uploader_column.find('img')
