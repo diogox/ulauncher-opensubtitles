@@ -5,7 +5,6 @@ This is an extension for [ULauncher](https://ulauncher.io/), a mac-like applicat
 For this extension to work, install the following modules:
 ```
 pip install --user beautifulsoup4
-pip install --user wget
 ```
 
 Available Commands: (TODO)

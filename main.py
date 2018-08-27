@@ -32,11 +32,15 @@ class OpenSubtitlesExtension(Extension):
         items = []
 
         for item in search_result[:5]:
+            download_info = {
+                'url': item.url,
+                'id': item.download_id
+            }
             items.append(ExtensionResultItem(icon = 'images/tv_show.png',
                                          name = '%s - %s [%s]' % (item.language, item.uploader, item.uploader_badge),
                                          description = '%s' % item.video_source_name,
                                          highlightable = True,
-                                         on_enter = ExtensionCustomAction(item.url)))
+                                         on_enter = ExtensionCustomAction(download_info)))
         return RenderResultListAction(items)
 
 class KeywordQueryEventListener(EventListener):
@@ -71,10 +75,10 @@ class PreferencesUpdateEventListener(EventListener):
 class ItemEnterEventListener(EventListener):
     
     def on_event(self, event, extension):
-        download_link = event.get_data()
+        data = event.get_data()
         
         import srt
-        srt.download(download_link)
+        srt.download(data['url'], data['id'])
 
 if __name__ == '__main__':
     OpenSubtitlesExtension().run()

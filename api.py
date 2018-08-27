@@ -39,8 +39,6 @@ class API:
                 uploader_badge = ''
 
             download_id = download_column.find('a')['href'].replace('/en/subtitleserve/sub/', '')
-            # TODO use wget with this 'download_link' to download the subtitles
-            download_link = 'https://dl.opensubtitles.org/en/download/sub/' + download_id
             # Create new item with info
             new_item = SearchResultItem()
             new_item.url = BASE_URL + url
@@ -48,7 +46,7 @@ class API:
             new_item.language = language
             new_item.uploader = uploader
             new_item.uploader_badge = uploader_badge
-            new_item.download_link = download_link
+            new_item.download_id = download_id
             # Append it to list
             search_result_items.append( new_item )
         
