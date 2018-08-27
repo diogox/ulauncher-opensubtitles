@@ -18,3 +18,6 @@ Available Commands: (TODO)
 
 TODO in the future:
 `srt file` - Detects a selected video file in the file explorer and searches for subtitles for it.
+
+Credit:
+    -> Most icon flags were downloaded from [flaticon](https://www.flaticon.com/packs/rectangular-country-simple-flags?style_id=118&family_id=41&group_id=1&category_id=85)
