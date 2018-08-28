@@ -91,7 +91,7 @@ def render_search_movies(query):
     # If it's empty
     if not items:
         # TODO: stylize
-        items.append( ExtensionResultItem(icon = 'images/.png',
+        items.append( ExtensionResultItem(icon = 'images/not_found.png',
                                 name = "No results were found for '%s'" % query.rstrip(),
                                 description = 'Maybe there are no subtitles for this?',
                                 highlightable = False,
