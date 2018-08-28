@@ -6,7 +6,7 @@
     "developer_name": "Diogo Xavier",
     "icon": "images/opensubtitles.png",
     "options": {
-        "query_debounce": 0.1
+        "query_debounce": 0.2
     },
     "preferences": [
         {

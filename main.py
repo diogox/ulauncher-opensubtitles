@@ -12,14 +12,12 @@ from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 
 logger = logging.getLogger(__name__)
 
-from api import API
+import screens
 
 class OpenSubtitlesExtension(Extension):
 
     def __init__(self):
         super(OpenSubtitlesExtension, self).__init__()
-
-        self._api = API()
 
         # Subscribe to events
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
@@ -27,6 +25,27 @@ class OpenSubtitlesExtension(Extension):
         self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
 
+    def show_menu(self):
+        return RenderResultListAction( screens.render_menu() )
+
+    def show_search_media_menu(self, command):
+        if command == 'm':
+            media_type = 'Movies'
+        else:
+            media_type = 'TV Shows'
+
+        return RenderResultListAction( screens.render_menu(media_type) )
+
+    def show_search_media(self, command, query):
+        items = []
+        if command == 'm':
+            items = screens.render_search_movies(query)
+        else:
+            items = screens.render_search_tv(query)
+
+        return RenderResultListAction( items )
+
+    """
     def show_example(self):
         search_result = self._api.get_episode(4145054, 1, 3)
         items = []
@@ -43,12 +62,34 @@ class OpenSubtitlesExtension(Extension):
                                          highlightable = True,
                                          on_enter = ExtensionCustomAction(download_info)))
         return RenderResultListAction(items)
+    """
 
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
         argument = event.get_argument()
-        return extension.show_example()
+        if argument is None:
+            return extension.show_menu()
+        
+        commands = argument.split()
+
+        # Search for media type
+        if commands[0] == 'm' or commands[0] == 'tv':
+
+            # There's nothing to search yet
+            if len( commands ) is 1:
+                
+                # Show media type search menu 
+                return extension.show_search_media_menu(commands[0])
+            else:
+                # Get search query
+                search_query = ''
+                for command in commands[1:]:
+                    search_query += command + ' '
+                
+                # Show media type search results
+                return extension.show_search_media(commands[0], search_query)
+
 
 class PreferencesEventListener(EventListener):
 
