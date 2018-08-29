@@ -45,42 +45,33 @@ class OpenSubtitlesExtension(Extension):
 
         return RenderResultListAction( items )
 
-    """
-    def show_example(self):
-        search_result = self._api.get_episode(4145054, 1, 3)
-        items = []
+    def show_media(self, media_id):
+        return RenderResultListAction( screens.render_media(media_id) )
 
-        for item in search_result[:5]:
-            download_info = {
-                'url': item.url,
-                'id': item.download_id
-            }
-            from languages import LANGUAGES
-            items.append(ExtensionResultItem(icon = 'images/languages/%s.svg' % LANGUAGES[item.language],
-                                         name = '%s - %s [%s]' % (item.uploader, item.uploader_badge, item.language),
-                                         description = '%s' % item.video_source_name,
-                                         highlightable = True,
-                                         on_enter = ExtensionCustomAction(download_info)))
-        return RenderResultListAction(items)
-    """
+    def show_episode(self, media_id, episode_designator):
+        return RenderResultListAction( screens.render_episode(media_id, episode_designator) )
 
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
+        import re
+
         argument = event.get_argument()
         if argument is None:
             return extension.show_menu()
+        else:
+            argument = argument.strip()
         
         commands = argument.split()
 
         # Search for media type
-        if commands[0] == 'm' or commands[0] == 'tv':
+        if re.match(r'^(tv|m)$', commands[0], re.IGNORECASE):
 
             # There's nothing to search yet
             if len( commands ) is 1:
                 
                 # Show media type search menu 
-                return extension.show_search_media_menu(commands[0])
+                return extension.show_search_media_menu(commands[0].lower())
             else:
                 # Get search query
                 search_query = ''
@@ -88,7 +79,19 @@ class KeywordQueryEventListener(EventListener):
                     search_query += command + ' '
                 
                 # Show media type search results
-                return extension.show_search_media(commands[0], search_query)
+                return extension.show_search_media(commands[0].lower(), search_query)
+
+        elif re.match(r'^-(\d)+$', commands[0]) and len(commands) == 1: # Match for id number lookups
+            media_id = commands[0].replace('-', '')
+            return extension.show_media(media_id)
+
+        elif re.match(r'^-(\d)+ s(0)?[1-9]+((0)?)+e(0)?[1-9]+((0)?)+$', argument, re.IGNORECASE):
+            media_id = commands[0].replace('-', '')
+            return extension.show_episode(media_id, commands[1])
+        
+        # User is still specifying the episode number
+        elif re.match(r'^-(\d)+$', commands[0]):
+            return RenderResultListAction(screens.render_episode_not_specified())
 
 
 class PreferencesEventListener(EventListener):
@@ -117,10 +120,26 @@ class PreferencesUpdateEventListener(EventListener):
 class ItemEnterEventListener(EventListener):
     
     def on_event(self, event, extension):
+        import gi
+        gi.require_version('Gtk', '3.0')
+        gi.require_version('Notify', '0.7')
+        from gi.repository import Notify
+        Notify.init('Ulauncher-OpenSubtitles')
         data = event.get_data()
         
-        import srt
-        srt.download(data['url'], data['id'])
+        # If it's a 'download' type
+        try:
+            import srt
+            url = data['download']['url']
+            download_id = data['download']['download_id']
+            try:
+                srt.download(url, download_id)
+                Notify.Notification.new("OpenSubtitles", 'Subtitles downloaded!', 'images/opensubtitles.png').show()
+            except:
+                Notify.Notification.new("OpenSubtitles", 'Error downloading subtitles!', 'images/not_found.png').show()
+        except:
+            # Do other feature
+            pass
 
 if __name__ == '__main__':
     OpenSubtitlesExtension().run()
