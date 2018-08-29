@@ -20,9 +20,9 @@ class OpenSubtitlesExtension(Extension):
         super(OpenSubtitlesExtension, self).__init__()
 
         # Subscribe to events
-        self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(PreferencesEvent, PreferencesEventListener()) # Set preferences to inner members
         self.subscribe(PreferencesUpdateEvent, PreferencesUpdateEventListener())
+        self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
 
     def show_menu(self):
@@ -45,11 +45,11 @@ class OpenSubtitlesExtension(Extension):
 
         return RenderResultListAction( items )
 
-    def show_media(self, media_id):
-        return RenderResultListAction( screens.render_media(media_id) )
+    def show_media(self, media_id, language):
+        return RenderResultListAction( screens.render_media(media_id, language) )
 
-    def show_episode(self, media_id, episode_designator):
-        return RenderResultListAction( screens.render_episode(media_id, episode_designator) )
+    def show_episode(self, media_id, episode_designator, language):
+        return RenderResultListAction( screens.render_episode(media_id, episode_designator, language) )
 
 class KeywordQueryEventListener(EventListener):
 
@@ -81,13 +81,21 @@ class KeywordQueryEventListener(EventListener):
                 # Show media type search results
                 return extension.show_search_media(commands[0].lower(), search_query)
 
-        elif re.match(r'^-(\d)+$', commands[0]) and len(commands) == 1: # Match for id number lookups
+        elif re.match(r'^-(\d)+$( )?(\w+)?$', commands[0], re.IGNORECASE): # Match for id number lookups
+            try:
+                language = commands[1]
+            except:
+                language = None
             media_id = commands[0].replace('-', '')
-            return extension.show_media(media_id)
+            return extension.show_media(media_id, language)
 
-        elif re.match(r'^-(\d)+ s(0)?[1-9]+((0)?)+e(0)?[1-9]+((0)?)+$', argument, re.IGNORECASE):
+        elif re.match(r'^-(\d)+ s(0)?[1-9]+((0)?)+e(0)?[1-9]+((0)?)+( )?(\w+)?$', argument, re.IGNORECASE):
+            try:
+                language = commands[2]
+            except:
+                language = None
             media_id = commands[0].replace('-', '')
-            return extension.show_episode(media_id, commands[1])
+            return extension.show_episode(media_id, commands[1], language)
         
         # User is still specifying the episode number
         elif re.match(r'^-(\d)+$', commands[0]):
@@ -102,7 +110,9 @@ class PreferencesEventListener(EventListener):
 
         import preferences
         preferences.PREF_KEYWORD = _preferences['keyword']
-        logger.info("Set 'keyword' preference as: %s" % preferences.PREF_KEYWORD)
+
+        from languages import LANGUAGES
+        preferences.PREF_MAIN_LANGUAGE = LANGUAGES[_preferences['main_language']]
 
 class PreferencesUpdateEventListener(EventListener):
     
@@ -114,8 +124,9 @@ class PreferencesUpdateEventListener(EventListener):
         import preferences
         if _id == 'keyword':
             preferences.PREF_KEYWORD = new_value
-            logger.info("Update 'keyword' preference to: %s" % preferences.PREF_KEYWORD)
-
+        elif _id == 'main_language':
+            from languages import LANGUAGES
+            preferences.PREF_MAIN_LANGUAGE = LANGUAGES[new_value]
 
 class ItemEnterEventListener(EventListener):
     

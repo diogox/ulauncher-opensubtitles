@@ -2,18 +2,21 @@ from bs4 import BeautifulSoup
 import requests
 
 from languages import LANGUAGES
+from preferences import PREF_MAIN_LANGUAGE
 
 BASE_URL = 'https://www.opensubtitles.org'
     
 def search(query):
     return
 
-def get_media(_id, id_type = 'idmovie'):
-    media_url = 'https://www.opensubtitles.org/en/search/sublanguageid-all/%s-%s' % (id_type, _id)
+def get_media(_id, language, id_type = 'idmovie'):
+    if language == '':
+        language = PREF_MAIN_LANGUAGE
+        
+    media_url = 'https://www.opensubtitles.org/en/search/sublanguageid-%s/%s-%s' % (language, id_type, _id)
     response_body = requests.get(media_url).text
     body = BeautifulSoup(response_body, 'html.parser').find('div', class_='content')
 
-    # DON'T JUDGE ME! i'm super tired...
     media_schema = body.find('h1').parent.parent['itemtype']
 
     if media_schema == 'http://schema.org/Movie':
@@ -36,7 +39,7 @@ def search_shows(query):
     tv_shows = list( filter( lambda item: item.kind == TV_SHOW, suggestions) )
     return tv_shows
 
-def get_episode(show_id, season_nr, episode_nr, language = LANGUAGES['ALL']):
+def get_episode(show_id, season_nr, episode_nr, language = PREF_MAIN_LANGUAGE):
     import re
 
     url = 'https://www.opensubtitles.org/en/ssearch/sublanguageid-%s/idmovie-%s' % (language, show_id)
@@ -52,7 +55,7 @@ def get_episode(show_id, season_nr, episode_nr, language = LANGUAGES['ALL']):
 
     extra = '/en/search/sublanguageid-%s/imdbid-' % language
     episode_id = episode_url.replace(extra, '')
-    return get_media(episode_id, 'imdbid')
+    return get_media(episode_id, language, 'imdbid')
 
 class SearchResultItem:
     url = ''

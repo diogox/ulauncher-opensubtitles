@@ -4,6 +4,7 @@ from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
 from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 
+from preferences import PREF_MAIN_LANGUAGE
 
 def render_menu(media_type = None):
 
@@ -97,12 +98,23 @@ def not_found_item(query):
                                highlightable = False,
                                on_enter = DoNothingAction())
 
-def render_media(media_id):
+def render_media(media_id, language):
     from languages import LANGUAGES
     import api
     
+    language_valid = False
+    if language:
+        for name, code in LANGUAGES.iteritems():
+            if code == language.lower() or name.lower() == language.lower():
+                language = code
+                language_valid = True
+                break
+
+    if not language_valid:
+        language = PREF_MAIN_LANGUAGE
+
     try:
-        media_results = api.get_media(media_id)
+        media_results = api.get_media(media_id, language = language)
     except Exception:
         # It's a TV Show
         return render_episode_not_specified()
@@ -115,7 +127,7 @@ def render_media(media_id):
             uploader_badge = '[%s]' % result.uploader_badge
         items.append(
             ExtensionResultItem(icon = 'images/languages/%s.svg' % LANGUAGES[result.language],
-                                name = 'Uploaded by %s [%s]' % (uploader, uploader_badge),
+                                name = 'Uploaded by %s %s' % (uploader, uploader_badge),
                                 description = '%s | (%s)' % (result.video_source_name, result.language),
                                 highlightable = True,
                                 on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=True))
@@ -138,19 +150,32 @@ def render_episode_not_specified():
                                highlightable = False,
                                on_enter = DoNothingAction()) ]
 
-def render_episode(media_id, episode_designator):
+def render_episode(media_id, episode_designator, language):
     from languages import LANGUAGES
+    from preferences import PREF_MAIN_LANGUAGE
     import re
     import api
 
     info = re.findall(r'\d+', episode_designator)
     season = str(int(info[0]))
     episode = info[1]
+    
+    language_valid = False
+    if language:
+        for name, code in LANGUAGES.iteritems():
+            if code == language.lower() or name.lower() == language.lower():
+                language = code
+                language_valid = True
+                break
+
+    if not language_valid:
+        language = PREF_MAIN_LANGUAGE
+
     try:
-        episode_results = api.get_episode(media_id, season, episode)
+        episode_results = api.get_episode(media_id, season, episode, language)
     except:
         # TODO Render error message
-        pass
+        return
 
     items = []
     for result in episode_results:
@@ -160,7 +185,7 @@ def render_episode(media_id, episode_designator):
             uploader_badge = '[%s]' % result.uploader_badge
 
         items.append( ExtensionResultItem(icon = 'images/languages/%s.svg' % LANGUAGES[result.language],
-                                name = 'Uploaded by %s [%s]' % (uploader, uploader_badge),
+                                name = 'Uploaded by %s %s' % (uploader, uploader_badge),
                                 description = '%s | (%s)' % (result.video_source_name, result.language),
                                 highlightable = True,
                                 on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=True)))
