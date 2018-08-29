@@ -71,9 +71,9 @@ def render_search_movies(query):
     from preferences import PREF_KEYWORD
     import api
     items = []
-    tv_shows = api.search_movies(query)
+    movies = api.search_movies(query)
     
-    for movie in tv_shows:
+    for movie in movies:
         if movie.rating:
             description = 'IMDB rating: %s' % movie.rating
         else:
@@ -98,13 +98,28 @@ def not_found_item(query):
                                on_enter = DoNothingAction())
 
 def render_media(media_id):
+    from languages import LANGUAGES
     import api
     
-    # Check if it's a TV Show
     try:
-        items = api.get_media(media_id)
+        media_results = api.get_media(media_id)
     except Exception:
+        # It's a TV Show
         return render_episode_not_specified()
+
+    items = []
+    for result in media_results:
+        uploader = result.uploader or 'UNKOWN'
+        uploader_badge = ''
+        if result.uploader_badge:
+            uploader_badge = '[%s]' % result.uploader_badge
+        items.append(
+            ExtensionResultItem(icon = 'images/languages/%s.svg' % LANGUAGES[result.language],
+                                name = 'Uploaded by %s [%s]' % (uploader, uploader_badge),
+                                description = '%s | (%s)' % (result.video_source_name, result.language),
+                                highlightable = True,
+                                on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=True))
+        )
 
     # If there are no results
     if not items:
@@ -113,6 +128,8 @@ def render_media(media_id):
                                description = 'Maybe there are no subtitles for this?',
                                highlightable = False,
                                on_enter = DoNothingAction()) ]
+
+    return items[:5]
 
 def render_episode_not_specified():
     return [ ExtensionResultItem(icon = 'images/tv.png',
@@ -127,8 +144,6 @@ def render_episode(media_id, episode_designator):
     import api
 
     info = re.findall(r'\d+', episode_designator)
-    from main import logger
-    logger.info('EPISODE NR: %s', info[1])
     season = str(int(info[0]))
     episode = info[1]
     try:
@@ -139,10 +154,14 @@ def render_episode(media_id, episode_designator):
 
     items = []
     for result in episode_results:
-        
+        uploader = result.uploader or 'UNKOWN'
+        uploader_badge = ''
+        if result.uploader_badge:
+            uploader_badge = '[%s]' % result.uploader_badge
+
         items.append( ExtensionResultItem(icon = 'images/languages/%s.svg' % LANGUAGES[result.language],
-                                name = '(%s) - uploaded by %s [%s]' % (result.language, result.uploader, result.uploader_badge),
-                                description = result.video_source_name,
+                                name = 'Uploaded by %s [%s]' % (uploader, uploader_badge),
+                                description = '%s | (%s)' % (result.video_source_name, result.language),
                                 highlightable = True,
                                 on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=True)))
 

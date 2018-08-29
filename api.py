@@ -8,10 +8,8 @@ BASE_URL = 'https://www.opensubtitles.org'
 def search(query):
     return
 
-# TODO!!!!!!!!!!!! - The body here shows that adblock as been detected instead of showing the page..
 def get_media(_id, id_type = 'idmovie'):
     media_url = 'https://www.opensubtitles.org/en/search/sublanguageid-all/%s-%s' % (id_type, _id)
-    media_url = 'https://www.opensubtitles.org/en/search/sublanguageid-all/imdbid-4227538'
     response_body = requests.get(media_url).text
     body = BeautifulSoup(response_body, 'html.parser').find('div', class_='content')
 
