@@ -81,14 +81,6 @@ class KeywordQueryEventListener(EventListener):
                 # Show media type search results
                 return extension.show_search_media(commands[0].lower(), search_query)
 
-        elif re.match(r'^-(\d)+$( )?(\w+)?$', commands[0], re.IGNORECASE): # Match for id number lookups
-            try:
-                language = commands[1]
-            except:
-                language = None
-            media_id = commands[0].replace('-', '')
-            return extension.show_media(media_id, language)
-
         elif re.match(r'^-(\d)+ s(0)?[1-9]+((0)?)+e(0)?[1-9]+((0)?)+( )?(\w+)?$', argument, re.IGNORECASE):
             try:
                 language = commands[2]
@@ -96,6 +88,14 @@ class KeywordQueryEventListener(EventListener):
                 language = None
             media_id = commands[0].replace('-', '')
             return extension.show_episode(media_id, commands[1], language)
+
+        elif re.match(r'^-(\d)+$( )?(\w+)?$', commands[0], re.IGNORECASE): # Match for id number lookups
+            try:
+                language = commands[1]
+            except:
+                language = None
+            media_id = commands[0].replace('-', '')
+            return extension.show_media(media_id, language)
         
         # User is still specifying the episode number
         elif re.match(r'^-(\d)+$', commands[0]):
