@@ -94,11 +94,11 @@ def render_search_movies(query):
 def not_found_item(query):
     return ExtensionResultItem(icon = 'images/not_found.png',
                                name = "No results were found for '%s'" % query.rstrip(),
-                               description = 'Maybe there are no subtitles for this?',
+                               description = 'Maybe there are no subtitles for this? (or atleast not in this language)',
                                highlightable = False,
                                on_enter = DoNothingAction())
 
-def render_media(media_id, language):
+def render_media(media_id, language, is_media_hash = False):
     from languages import LANGUAGES
     import api
     
@@ -114,10 +114,13 @@ def render_media(media_id, language):
         language = PREF_MAIN_LANGUAGE
 
     try:
-        media_results = api.get_media(media_id, language = language)
+        media_results = api.get_media(media_id, language = language, is_media_hash = is_media_hash)
     except Exception:
-        # It's a TV Show
-        return render_episode_not_specified()
+        if not is_media_hash:
+            # It's a TV Show
+            return render_episode_not_specified()
+        else: 
+            return [ not_found_item('the specified file') ]
 
     items = []
     for result in media_results:
@@ -195,4 +198,18 @@ def render_episode(media_id, episode_designator, language):
         items.append( not_found_item(episode_designator) )   
 
     return items[:5]
-    
+
+def render_auto_results(result_paths):
+    import ntpath
+    from main import logger
+    items = []
+    for path in result_paths:
+        items.append(
+            ExtensionResultItem(icon = 'images/video.png',
+                                name = ntpath.basename(path),
+                                description = path,
+                                highlightable = True,
+                                on_enter = ExtensionCustomAction(data = {'video_hash': path}, keep_app_open = True))
+        )
+
+    return items[:5]

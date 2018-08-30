@@ -9,15 +9,23 @@ BASE_URL = 'https://www.opensubtitles.org'
 def search(query):
     return
 
-def get_media(_id, language, id_type = 'idmovie'):
+def get_media(_id, language, id_type = 'idmovie', is_media_hash = False):
     if language == '':
         language = PREF_MAIN_LANGUAGE
-        
-    media_url = 'https://www.opensubtitles.org/en/search/sublanguageid-%s/%s-%s' % (language, id_type, _id)
+    
+    if not is_media_hash:
+        media_url = 'https://www.opensubtitles.org/en/search/sublanguageid-%s/%s-%s' % (language, id_type, _id)
+    else:
+        media_url = 'https://www.opensubtitles.org/en/search/sublanguageid-%s/moviehash-%s' % (language, _id)
+
     response_body = requests.get(media_url).text
     body = BeautifulSoup(response_body, 'html.parser').find('div', class_='content')
 
-    media_schema = body.find('h1').parent.parent['itemtype']
+    # DON'T JUDGE ME! I just want to get this done...
+    if is_media_hash:
+        media_schema = 'http://schema.org/Movie'
+    else:
+        media_schema = body.find('h1').parent.parent['itemtype']
 
     if media_schema == 'http://schema.org/Movie':
         # Parse it as a movie

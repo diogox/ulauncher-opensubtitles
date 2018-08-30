@@ -48,8 +48,54 @@ class OpenSubtitlesExtension(Extension):
     def show_media(self, media_id, language):
         return RenderResultListAction( screens.render_media(media_id, language) )
 
+    def show_media_hash(self, media_hash, language):
+        return RenderResultListAction( screens.render_media(media_hash, language, True))
+
     def show_episode(self, media_id, episode_designator, language):
         return RenderResultListAction( screens.render_episode(media_id, episode_designator, language) )
+
+    def show_auto(self, query_list):
+        VIDEO_FILE_FORMATS = [
+            'mkv',
+            'flv', 
+            'vob', 
+            'avi', 
+            'wmv', 
+            'mov', 
+            'mp4', 
+            'm4p', 
+            'm4v', 
+            'mpg', 
+            'mp2', 
+            'mpeg', 
+            'mpe', 
+            'mpv', 
+            'm2v', 
+            'm4v'
+        ]
+
+        # Create file regex
+        regex = r'\.('
+
+        for video_format in VIDEO_FILE_FORMATS[: len(VIDEO_FILE_FORMATS) - 1]:
+            regex += video_format + '|'
+
+        regex += VIDEO_FILE_FORMATS[len(VIDEO_FILE_FORMATS) - 1]
+        regex += ')$'
+        # Find default file manager
+        import subprocess
+        out = subprocess.Popen(["locate", "--regex", regex],  
+                                stdout=subprocess.PIPE, 
+                                stderr=subprocess.STDOUT)
+        stdout, _ = out.communicate()
+        file_paths = stdout.splitlines()
+        
+        import ntpath
+        for query in query_list:
+            file_paths = list( filter(lambda path: str(query) in ntpath.basename(path).lower(), file_paths))
+
+        return RenderResultListAction( screens.render_auto_results(file_paths) )
+        # TODO: Present files to the user, let him pick one, then form a hash and search opensubtitles
 
 class KeywordQueryEventListener(EventListener):
 
@@ -80,6 +126,22 @@ class KeywordQueryEventListener(EventListener):
                 
                 # Show media type search results
                 return extension.show_search_media(commands[0].lower(), search_query)
+            
+        elif commands[0] == 'auto':
+            try:
+                queries = commands[1:]
+            except:
+                queries = []
+            return extension.show_auto(queries)
+
+        # Check for video hash
+        elif re.match(r'^-hash[^\s]+( )?(\w+)?$', argument, re.IGNORECASE):
+            try:
+                language = commands[1]
+            except:
+                language = None
+            media_hash = commands[0].replace('-hash', '')
+            return extension.show_media_hash(media_hash, language)
 
         elif re.match(r'^-(\d)+ s(0)?[1-9]+((0)?)+e(0)?[1-9]+((0)?)+( )?(\w+)?$', argument, re.IGNORECASE):
             try:
@@ -149,8 +211,16 @@ class ItemEnterEventListener(EventListener):
             except:
                 Notify.Notification.new("OpenSubtitles", 'Error downloading subtitles!', 'images/not_found.png').show()
         except:
-            # Do other feature
-            pass
+            # Check for video hash search
+            try:
+                from video import hash_video
+                from preferences import PREF_KEYWORD
+                file_path = data['video_hash']
+                file_hash = hash_video(file_path)
+                return SetUserQueryAction(PREF_KEYWORD + ' -hash' + file_hash)
+            except:
+                # Do other feature
+                pass
 
 if __name__ == '__main__':
     OpenSubtitlesExtension().run()
