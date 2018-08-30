@@ -130,7 +130,7 @@ def render_media(media_id, language):
                                 name = 'Uploaded by %s %s' % (uploader, uploader_badge),
                                 description = '%s | (%s)' % (result.video_source_name, result.language),
                                 highlightable = True,
-                                on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=True))
+                                on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=False))
         )
 
     # If there are no results
@@ -188,7 +188,7 @@ def render_episode(media_id, episode_designator, language):
                                 name = 'Uploaded by %s %s' % (uploader, uploader_badge),
                                 description = '%s | (%s)' % (result.video_source_name, result.language),
                                 highlightable = True,
-                                on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=True)))
+                                on_enter = ExtensionCustomAction(data = {'download': {'url': result.url, 'download_id': result.download_id}}, keep_app_open=False)))
 
     # If it's empty
     if not items:
