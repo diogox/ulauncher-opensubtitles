@@ -21,7 +21,8 @@ Available Commands:
 
 `srt -%id eng` - Same as above, but with 'eng' (English) as the language of choice for the subtitles
 
-TODO in the future:
+
+**TODO in the future:**
 
 `srt %query` - Search opensubtitles directly with %query
 
