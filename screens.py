@@ -18,7 +18,7 @@ def render_menu(media_type = None):
         description = 'This will filter the results to match only with ' + media_type
 
     # Render info item
-    items.append( ExtensionResultItem(icon = 'images/.svg',
+    items.append( ExtensionResultItem(icon = 'images/search.png',
                                     name = 'Start typing to search...',
                                     description = description,
                                     highlightable = False,
@@ -29,8 +29,9 @@ def render_menu(media_type = None):
         return items
 
     _MENU_ITEMS = [
+        ('Detect Video Files', 'auto'),
         ('Search Movies', 'm'),
-        ('Search TV Shows', 'tv')
+        ('Search TV Shows', 'tv'),
     ]
 
     # Render menu items

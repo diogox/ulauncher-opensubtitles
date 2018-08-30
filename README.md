@@ -2,14 +2,18 @@
 
 This is an extension for [ULauncher](https://ulauncher.io/), a mac-like application launcher for linux. 
 
-![A quick demo of the extension](./screenshots/demo.gif)
+![Screenshot](./screenshots/ulauncher-opensubtitles.png)
 
+## Instalation
 For this extension to work, install the following modules:
 ```
 pip install --user beautifulsoup4
 ```
 
-Available Commands:
+## Usage
+![A quick demo of the extension](./screenshots/demo.gif)
+
+**Available Commands:**
 
 `srt ` - Shows you the menu
 
