@@ -92,7 +92,7 @@ class OpenSubtitlesExtension(Extension):
         
         import ntpath
         for query in query_list:
-            file_paths = list( filter(lambda path: str(query) in ntpath.basename(path).lower(), file_paths))
+            file_paths = list( [path for path in file_paths if str(query) in ntpath.basename(path).lower()])
 
         return RenderResultListAction( screens.render_auto_results(file_paths) )
         # TODO: Present files to the user, let him pick one, then form a hash and search opensubtitles

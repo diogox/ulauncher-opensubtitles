@@ -105,7 +105,7 @@ def render_media(media_id, language, is_media_hash = False):
     
     language_valid = False
     if language:
-        for name, code in LANGUAGES.iteritems():
+        for name, code in list(LANGUAGES.items()):
             if code == language.lower() or name.lower() == language.lower():
                 language = code
                 language_valid = True
@@ -166,7 +166,7 @@ def render_episode(media_id, episode_designator, language):
     
     language_valid = False
     if language:
-        for name, code in LANGUAGES.iteritems():
+        for name, code in list(LANGUAGES.items()):
             if code == language.lower() or name.lower() == language.lower():
                 language = code
                 language_valid = True
