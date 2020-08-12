@@ -3,7 +3,7 @@ from main import logger
 DOWNLOAD_BASE = 'https://dl.opensubtitles.org/en/download/sub/'
 
 def download(url, download_id):
-    output_dir = './Desktop/'
+    output_dir = './Downloads/'
     zip_name = 'Subtitles'
     zip_path = output_dir + zip_name
 
