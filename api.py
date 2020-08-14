@@ -39,12 +39,12 @@ def get_media(_id, language, id_type = 'idmovie', is_media_hash = False):
 
 def search_movies(query):
     suggestions = suggest_media(query)
-    movies = list( filter( lambda item: item.kind == MOVIE, suggestions) )
+    movies = list( [item for item in suggestions if item.kind == MOVIE] )
     return movies
 
 def search_shows(query):
     suggestions = suggest_media(query)
-    tv_shows = list( filter( lambda item: item.kind == TV_SHOW, suggestions) )
+    tv_shows = list( [item for item in suggestions if item.kind == TV_SHOW] )
     return tv_shows
 
 def get_episode(show_id, season_nr, episode_nr, language = PREF_MAIN_LANGUAGE):
@@ -52,12 +52,13 @@ def get_episode(show_id, season_nr, episode_nr, language = PREF_MAIN_LANGUAGE):
 
     url = 'https://www.opensubtitles.org/en/ssearch/sublanguageid-%s/idmovie-%s' % (language, show_id)
     response_body = requests.get(url).text
+    
     result_list = BeautifulSoup(response_body, 'html.parser').find(id = 'search_results')
     season_items = result_list.find(id = re.compile('^season-(0)*(%s)$' % season_nr)).parent.parent
-    episode_item = None
+    episode_item = season_items
 
-    for _ in range( int(episode_nr) ):
-        episode_item = season_items.next_sibling
+    for _ in range(int(episode_nr)):
+        episode_item = episode_item.next_sibling
 
     episode_url = episode_item.find('a')['href']
 
